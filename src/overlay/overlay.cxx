@@ -12,6 +12,12 @@ static char szHostIp[IP_BUFFER_SIZE];
 static unsigned short nSyncPort;
 static unsigned short nOurGGPOPort;
 
+bool TrainingModeHelper::leftCorner = false;
+bool TrainingModeHelper::center = true;
+bool TrainingModeHelper::rightCorner = false;
+bool TrainingModeHelper::positionSwapped = false;
+int  TrainingModeHelper::previousInput = 0;
+int* TrainingModeHelper::playerInput = new int[3];
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
 
@@ -141,6 +147,80 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 	ImGui::End();
 }
 
+void PositionReset(GameMethods* lpGameMethods, GameState* lpGameState) {
+	//grab both playerOne and playerTwo object data
+	GameObjectData* playerOneObjectData = &(*lpGameState->arrCharacters)[0];
+	GameObjectData* playerTwoObjectData = &(*lpGameState->arrCharacters)[1];
+	int p1x = playerOneObjectData->xPos;
+	int p2x = playerTwoObjectData->xPos;
+
+	*lpGameState->nCameraHoldTimer = 0;
+	*lpGameState->nCameraZoom = 64000;
+
+	if (TrainingModeHelper::center) {
+		p1x = -14400;
+		p2x = 14400;
+	}
+	else if (TrainingModeHelper::leftCorner) {
+		*lpGameState->nCameraPlayerXPositionHistory = -200000;
+		p1x = -74000;
+		p2x = -59900;
+	}
+	else {
+		*lpGameState->nCameraPlayerXPositionHistory = 200000;
+		p1x = 59900;
+		p2x = 74000;
+	}
+
+	if (TrainingModeHelper::positionSwapped) {
+		playerOneObjectData->xPos = p2x;
+		playerTwoObjectData->xPos = p1x;
+	}
+	else {
+		playerOneObjectData->xPos = p1x;
+		playerTwoObjectData->xPos = p2x;
+	}
+}
+
+void DrawPositionResetWindow(GameMethods* lpGameMethods, GameState* lpGameState, bool* position_reset_open) {
+	ImGui::Begin("Position Reset", position_reset_open);
+	if (!TrainingModeHelper::leftCorner && !TrainingModeHelper::rightCorner)
+		TrainingModeHelper::center = true;
+	if (ImGui::Button("Left")) {
+		TrainingModeHelper::leftCorner = true;
+		TrainingModeHelper::rightCorner = false;
+		TrainingModeHelper::center = false;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Center")) {
+		TrainingModeHelper::leftCorner = false;
+		TrainingModeHelper::rightCorner = false;
+		TrainingModeHelper::center = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Right")) {
+		TrainingModeHelper::leftCorner = false;
+		TrainingModeHelper::rightCorner = true;
+		TrainingModeHelper::center = false;
+	}
+	if (ImGui::Button("Swap Sides")) {
+		TrainingModeHelper::positionSwapped = !TrainingModeHelper::positionSwapped;
+	}
+
+	if (TrainingModeHelper::previousInput == 1 && *lpGameState->nP1CurrentFrameInputs == 0) {
+		PositionReset(lpGameMethods, lpGameState);
+	}
+
+	ImGui::Text("Current Position: %s", TrainingModeHelper::center ? "Center" : TrainingModeHelper::leftCorner ? "Left Corner" : "Right Corner");
+	ImGui::Text("Swapped? %s", TrainingModeHelper::positionSwapped ? "True" : "False");
+	//ImGui::Text("Previous Frame Input: %d", TrainingModeHelper::previousInput);
+	//ImGui::Text("Current Frame Input: %d", *lpGameState->nP1CurrentFrameInputs);
+	ImGui::End();
+
+	TrainingModeHelper::previousInput = *lpGameState->nP1CurrentFrameInputs;
+}
+
+
 void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 	static GGPONetworkStats stats;
 	static bool load_vdf = false;
@@ -201,6 +281,7 @@ void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
 
 			ImGui::Text("Hitbox display enabled:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->bHitboxDisplayEnabled); ImGui::NextColumn();
 			ImGui::Text("Camera x position:"); ImGui::NextColumn(); ImGui::Text("%f", *lpGameState->fCameraXPos); ImGui::NextColumn();
+			ImGui::Text("Camera Player X Position History:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraPlayerXPositionHistory); ImGui::NextColumn();
 			ImGui::Text("Camera hold timer:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraHoldTimer); ImGui::NextColumn();
 			ImGui::Text("Camera zoom:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraZoom); ImGui::NextColumn();
 			ImGui::Text("Playfield left edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldLeftEdge); ImGui::NextColumn();
@@ -666,6 +747,7 @@ void DrawToolsMenu(bool* pHitbox) {
 		}
 		ImGui::MenuItem("Save/Load Replay", NULL, &show_save_load_replay);
 		ImGui::MenuItem("Mark unlocks on/off", NULL, &show_mark_unlocks);
+		ImGui::MenuItem("Position Reset", NULL, &show_position_reset);
 		ImGui::EndMenu();
 	}
 };
@@ -760,6 +842,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	}
 	if (show_ggpo_join) {
 		DrawGGPOJoinWindow(lpGameState, &show_ggpo_join);
+	}
+	if (show_position_reset) {
+		DrawPositionResetWindow(lpGameMethods, lpGameState, &show_position_reset);
 	}
 
 	ImGui::EndFrame();

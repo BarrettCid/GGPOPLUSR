@@ -31,7 +31,9 @@ enum gameinputs : unsigned short {
 	Kick = 0x2000,
 	Slash = 0x8000,
 	HSlash = 0x200,
-	Dust = 0x100
+	Dust = 0x100,
+    Reset = 1,
+    Pause = 8
 };
 
 typedef enum TensionMode {
@@ -245,6 +247,9 @@ typedef struct GameMethods {
     void(WINAPI* WaitForNextFrame)();
     void(WINAPI* MarkAllUnlocksOn)();
     void(WINAPI* MarkAllUnlocksOff)();
+    void(WINAPI* PlayerGameObjectInitialization)();
+    void(WINAPI* CheckForTrainingModeRestart)();
+    void(WINAPI* AdjustCamera)();
 } GameMethods;
 
 typedef struct GGPOState {

@@ -49,7 +49,12 @@ unsigned int translateFromNormalizedInput(unsigned int normalizedInput, int p, G
 	if (normalizedInput & Respect) {
 		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlRespect;
 	}
-
+	if (normalizedInput & Reset) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlReset;
+	}
+	if (normalizedInput & Pause) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlPause;
+	}
 	return translatedInput;
 }
 
@@ -368,6 +373,9 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->WaitForNextFrame = (void(WINAPI*)())(peRootOffset + 0x1475E0);
 	dest->MarkAllUnlocksOn = (void(WINAPI*)())(peRootOffset + 0x72790);
 	dest->MarkAllUnlocksOff = (void(WINAPI*)())(peRootOffset + 0x72660);
+	dest->PlayerGameObjectInitialization = (void(WINAPI*)())(peRootOffset + 0x6A070);
+	dest->CheckForTrainingModeRestart = (void(WINAPI*)())(peRootOffset + 0x1DA670);
+	dest->AdjustCamera = (void(WINAPI*)())(peRootOffset + 0x5EA40);
 	g_lpGameMethods = dest;
 
 	return S_OK;
