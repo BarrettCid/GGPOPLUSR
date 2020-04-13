@@ -19,7 +19,61 @@ bool TrainingModeHelper::positionSwapped = false;
 int  TrainingModeHelper::previousInput = 0;
 int* TrainingModeHelper::playerInput = new int[3];
 
-IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
+IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+unsigned int normalizeInput(GameState* lpGameState, unsigned int* input) {
+	int p = lpGameState->ggpoState.localPlayerIndex;
+
+	unsigned int normalizedInput = 0;
+
+	normalizedInput |= (*input & Up);
+	normalizedInput |= (*input & Down);
+	normalizedInput |= (*input & Left);
+	normalizedInput |= (*input & Right);
+
+	if (*input & lpGameState->arrPlayerData[p].ctrlP) {
+		normalizedInput |= Punch;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlK) {
+		normalizedInput |= Kick;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlS) {
+		normalizedInput |= Slash;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlH) {
+		normalizedInput |= HSlash;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlD) {
+		normalizedInput |= Dust;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlRespect) {
+		normalizedInput |= Respect;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlPKMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlPDMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Dust;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlPKSMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+		normalizedInput |= Slash;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlPKSHMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+		normalizedInput |= Slash;
+		normalizedInput |= HSlash;
+	}
+	if (*input & lpGameState->arrPlayerData[p].ctrlReset) {
+		normalizedInput |= Reset;
+	}
+
+	return normalizedInput;
+}
 
 void DrawEnterVersus2PWindow(GameState* lpGameState, bool* pOpen) {
 	static CharacterSelection* characters[2] = { &CHARACTERS[0], &CHARACTERS[1] };
@@ -148,7 +202,6 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 }
 
 void PositionReset(GameMethods* lpGameMethods, GameState* lpGameState) {
-	//grab both playerOne and playerTwo object data
 	GameObjectData* playerOneObjectData = &(*lpGameState->arrCharacters)[0];
 	GameObjectData* playerTwoObjectData = &(*lpGameState->arrCharacters)[1];
 	int p1x = playerOneObjectData->xPos;
@@ -207,17 +260,26 @@ void DrawPositionResetWindow(GameMethods* lpGameMethods, GameState* lpGameState,
 		TrainingModeHelper::positionSwapped = !TrainingModeHelper::positionSwapped;
 	}
 
-	if (TrainingModeHelper::previousInput == 1 && *lpGameState->nP1CurrentFrameInputs == 0) {
-		PositionReset(lpGameMethods, lpGameState);
+	if(!TrainingModeHelper::paused) {
+		if (normalizeInput(lpGameState, &TrainingModeHelper::previousInput) == Reset) {
+			PositionReset(lpGameMethods, lpGameState);
+		}
 	}
 
 	ImGui::Text("Current Position: %s", TrainingModeHelper::center ? "Center" : TrainingModeHelper::leftCorner ? "Left Corner" : "Right Corner");
 	ImGui::Text("Swapped? %s", TrainingModeHelper::positionSwapped ? "True" : "False");
-	//ImGui::Text("Previous Frame Input: %d", TrainingModeHelper::previousInput);
-	//ImGui::Text("Current Frame Input: %d", *lpGameState->nP1CurrentFrameInputs);
+	ImGui::Text("Previous Frame Input: %d", TrainingModeHelper::previousInput);
+	ImGui::Text("Normalized Input: %d", translateFromNormalizedInput(TrainingModeHelper::previousInput, lpGameState->ggpoState.localPlayerIndex, lpGameState));
+	ImGui::Text("Current Frame Input: %d", *lpGameState->nP1CurrentFrameInputs);
 	ImGui::End();
 
+	//store the previous input
 	TrainingModeHelper::previousInput = *lpGameState->nP1CurrentFrameInputs;
+	//make sure we are not paused
+	if ((TrainingModeHelper::previousInput == Pause && !TrainingModeHelper::paused) ||
+		(TrainingModeHelper::previousInput == Pause && TrainingModeHelper::paused)) {
+		TrainingModeHelper::paused = !TrainingModeHelper::paused;
+	}
 }
 
 

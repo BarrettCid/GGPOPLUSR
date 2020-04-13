@@ -31,7 +31,9 @@ struct TrainingModeHelper {
 	static bool center;
 	static bool rightCorner;
 	static bool positionSwapped;
-	static int previousInput;
+	static bool paused;
+	static unsigned int previousInput;
+	static int* playerInput;
 };
 
 LRESULT WINAPI OverlayWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -167,6 +167,9 @@ unsigned int normalizeInput(unsigned int* input) {
 		normalizedInput |= Slash;
 		normalizedInput |= HSlash;
 	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlReset) {
+		normalizedInput |= Reset;
+	}
 
 	return normalizedInput;
 }
