@@ -119,61 +119,6 @@ void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
 	}
 }
 
-/* Parses input flags, which may be based on non-default button settings,
-and returns normalized input flags */
-unsigned int normalizeInput(unsigned int* input) {
-	int p = g_gameState.ggpoState.localPlayerIndex;
-	unsigned int normalizedInput = 0;
-
-	normalizedInput |= (*input & Up);
-	normalizedInput |= (*input & Down);
-	normalizedInput |= (*input & Left);
-	normalizedInput |= (*input & Right);
-
-	if (*input & g_gameState.arrPlayerData[p].ctrlP) {
-		normalizedInput |= Punch;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlK) {
-		normalizedInput |= Kick;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlS) {
-		normalizedInput |= Slash;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlH) {
-		normalizedInput |= HSlash;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlD) {
-		normalizedInput |= Dust;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlRespect) {
-		normalizedInput |= Respect;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPKMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Kick;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPDMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Dust;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPKSMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Kick;
-		normalizedInput |= Slash;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPKSHMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Kick;
-		normalizedInput |= Slash;
-		normalizedInput |= HSlash;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlReset) {
-		normalizedInput |= Reset;
-	}
-
-	return normalizedInput;
-}
-
 /* Copies origin player's button settings to dest player's button settings*/
 void copyButtonSettings(int origin, int dest) {
 	g_gameState.arrPlayerData[dest].ctrlP = g_gameState.arrPlayerData[origin].ctrlP;
@@ -209,7 +154,7 @@ void FakePollForInputs() {
 		// Always use P1 controller
 		unsigned int* inputLocation = g_gameState.nP1CurrentFrameInputs;
 		
-		unsigned int normalizedInput = normalizeInput(inputLocation);
+		unsigned int normalizedInput = normalizeInput(inputLocation, &g_gameState);
 
 		// Despite notifying inputs via P1 controller, the simulation is still ran using both controller settings buffers.
 		// Thus, ggpo player 2 will use P2 controller settings.
