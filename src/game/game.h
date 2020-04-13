@@ -1123,3 +1123,4 @@ typedef struct TrainingModeRec {
 } TrainingModeRec;
 
 unsigned int translateFromNormalizedInput(unsigned int normalizedInput, int p, GameState* g_lpGameState);
+unsigned int normalizeInput(unsigned int* input, GameState* g_lpGameState);
