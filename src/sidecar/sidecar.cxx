@@ -237,6 +237,46 @@ void FakeIncrementRNGCursorWhileOffline() {
 	}
 }
 
+void FakeCheckForTrainingModeRestart() {
+	g_gameMethods.CheckForTrainingModeRestart();
+
+	//Training Mode Position
+	if (normalizeInput(g_gameState.nP1CurrentFrameInputs, &g_gameState) == Reset) {
+		//grab both playerOne and playerTwo object data
+		GameObjectData* playerOneObjectData = &(*g_gameState.arrCharacters)[0];
+		GameObjectData* playerTwoObjectData = &(*g_gameState.arrCharacters)[1];
+		int p1x = playerOneObjectData->xPos;
+		int p2x = playerTwoObjectData->xPos;
+
+		*g_gameState.nCameraHoldTimer = 0;
+		*g_gameState.nCameraZoom = 64000;
+
+		if (TrainingModeHelper::center) {
+			p1x = -14400;
+			p2x = 14400;
+		}
+		else if (TrainingModeHelper::leftCorner) {
+			*g_gameState.nCameraPlayerXPositionHistory = -200000;
+			p1x = -74000;
+			p2x = -59900;
+		}
+		else {
+			*g_gameState.nCameraPlayerXPositionHistory = 200000;
+			p1x = 59900;
+			p2x = 74000;
+		}
+
+		if (TrainingModeHelper::positionSwapped) {
+			playerOneObjectData->xPos = p2x;
+			playerTwoObjectData->xPos = p1x;
+		}
+		else {
+			playerOneObjectData->xPos = p1x;
+			playerTwoObjectData->xPos = p2x;
+		}
+	}
+}
+
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
 	DetourAttach(&(PVOID&)src->SteamAPI_Init, FakeSteamAPI_Init);
@@ -255,6 +295,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
 	DetourAttach(&(PVOID&)src->IncrementRNGCursorWhileOffline, FakeIncrementRNGCursorWhileOffline);
+	DetourAttach(&(PVOID&)src->CheckForTrainingModeRestart, FakeCheckForTrainingModeRestart);
 
 	return S_OK;
 }

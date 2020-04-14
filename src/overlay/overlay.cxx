@@ -148,40 +148,6 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 	ImGui::End();
 }
 
-void PositionReset(GameMethods* lpGameMethods, GameState* lpGameState) {
-	GameObjectData* playerOneObjectData = &(*lpGameState->arrCharacters)[0];
-	GameObjectData* playerTwoObjectData = &(*lpGameState->arrCharacters)[1];
-	int p1x = playerOneObjectData->xPos;
-	int p2x = playerTwoObjectData->xPos;
-
-	*lpGameState->nCameraHoldTimer = 0;
-	*lpGameState->nCameraZoom = 64000;
-
-	if (TrainingModeHelper::center) {
-		p1x = -14400;
-		p2x = 14400;
-	}
-	else if (TrainingModeHelper::leftCorner) {
-		*lpGameState->nCameraPlayerXPositionHistory = -200000;
-		p1x = -74000;
-		p2x = -59900;
-	}
-	else {
-		*lpGameState->nCameraPlayerXPositionHistory = 200000;
-		p1x = 59900;
-		p2x = 74000;
-	}
-
-	if (TrainingModeHelper::positionSwapped) {
-		playerOneObjectData->xPos = p2x;
-		playerTwoObjectData->xPos = p1x;
-	}
-	else {
-		playerOneObjectData->xPos = p1x;
-		playerTwoObjectData->xPos = p2x;
-	}
-}
-
 void DrawPositionResetWindow(GameMethods* lpGameMethods, GameState* lpGameState, bool* position_reset_open) {
 	ImGui::Begin("Position Reset", position_reset_open);
 	if (!TrainingModeHelper::leftCorner && !TrainingModeHelper::rightCorner)
@@ -207,26 +173,9 @@ void DrawPositionResetWindow(GameMethods* lpGameMethods, GameState* lpGameState,
 		TrainingModeHelper::positionSwapped = !TrainingModeHelper::positionSwapped;
 	}
 
-	if(!TrainingModeHelper::paused) {
-		if (normalizeInput(&TrainingModeHelper::previousInput, lpGameState) == Reset) {
-			PositionReset(lpGameMethods, lpGameState);
-		}
-	}
-
 	ImGui::Text("Current Position: %s", TrainingModeHelper::center ? "Center" : TrainingModeHelper::leftCorner ? "Left Corner" : "Right Corner");
 	ImGui::Text("Swapped? %s", TrainingModeHelper::positionSwapped ? "True" : "False");
-	ImGui::Text("Previous Frame Input: %d", TrainingModeHelper::previousInput);
-	ImGui::Text("Normalized Input: %d", translateFromNormalizedInput(TrainingModeHelper::previousInput, lpGameState->ggpoState.localPlayerIndex, lpGameState));
-	ImGui::Text("Current Frame Input: %d", *lpGameState->nP1CurrentFrameInputs);
 	ImGui::End();
-
-	//store the previous input
-	TrainingModeHelper::previousInput = *lpGameState->nP1CurrentFrameInputs;
-	//make sure we are not paused
-	if ((TrainingModeHelper::previousInput == Pause && !TrainingModeHelper::paused) ||
-		(TrainingModeHelper::previousInput == Pause && TrainingModeHelper::paused)) {
-		TrainingModeHelper::paused = !TrainingModeHelper::paused;
-	}
 }
 
 

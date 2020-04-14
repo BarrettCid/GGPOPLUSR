@@ -32,8 +32,8 @@ enum gameinputs : unsigned short {
 	Slash = 0x8000,
 	HSlash = 0x200,
 	Dust = 0x100,
-    Reset = 1,
-    Pause = 8
+    Reset = 0x1,
+    Pause = 0x8
 };
 
 typedef enum TensionMode {
