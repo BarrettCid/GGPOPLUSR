@@ -18,6 +18,12 @@
 #include "vdf_parser.hpp"
 
 #include "./game.h"
+#include "./trainingmodehelper.h"
+
+namespace trainingmodehelper {
+	int positionState = 0;
+	int swapState = 0;
+}
 
 static GameMethods* g_lpGameMethods;
 static GameState* g_lpGameState;

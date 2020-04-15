@@ -15,6 +15,7 @@
 #include <vdf_parser.hpp>
 
 #include "../game/game.h"
+#include "../game/trainingmodehelper.h"
 #include "../overlay/overlay.h"
 #include "sidecar.h"
 #include "ID3D9Wrapper.h"
@@ -251,11 +252,11 @@ void FakeCheckForTrainingModeRestart() {
 		*g_gameState.nCameraHoldTimer = 0;
 		*g_gameState.nCameraZoom = 64000;
 
-		if (TrainingModeHelper::center) {
+		if (trainingmodehelper::positionState == trainingmodehelper::center) {
 			p1x = -14400;
 			p2x = 14400;
 		}
-		else if (TrainingModeHelper::leftCorner) {
+		else if (trainingmodehelper::positionState == trainingmodehelper::leftCorner) {
 			*g_gameState.nCameraPlayerXPositionHistory = -200000;
 			p1x = -74000;
 			p2x = -59900;
@@ -266,7 +267,7 @@ void FakeCheckForTrainingModeRestart() {
 			p2x = 74000;
 		}
 
-		if (TrainingModeHelper::positionSwapped) {
+		if (trainingmodehelper::swapState == trainingmodehelper::swappedSides) {
 			playerOneObjectData->xPos = p2x;
 			playerTwoObjectData->xPos = p1x;
 		}

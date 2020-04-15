@@ -4,21 +4,15 @@
 #include <imgui_demo.cpp>
 
 #include "../game/game.h"
+#include "../game/trainingmodehelper.h"
 #include "overlay.h"
+
 
 #define DEFAULT_ALPHA 0.87f
 
 static char szHostIp[IP_BUFFER_SIZE];
 static unsigned short nSyncPort;
 static unsigned short nOurGGPOPort;
-
-bool TrainingModeHelper::leftCorner = false;
-bool TrainingModeHelper::center = true;
-bool TrainingModeHelper::rightCorner = false;
-bool TrainingModeHelper::positionSwapped = false;
-bool TrainingModeHelper::paused = false;
-unsigned int  TrainingModeHelper::previousInput = 0;
-int* TrainingModeHelper::playerInput = new int[3];
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -150,31 +144,34 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 
 void DrawPositionResetWindow(GameMethods* lpGameMethods, GameState* lpGameState, bool* position_reset_open) {
 	ImGui::Begin("Position Reset", position_reset_open);
-	if (!TrainingModeHelper::leftCorner && !TrainingModeHelper::rightCorner)
-		TrainingModeHelper::center = true;
+	if (trainingmodehelper::positionState != trainingmodehelper::leftCorner &&
+			trainingmodehelper::positionState != trainingmodehelper::rightCorner)
+		trainingmodehelper::positionState = trainingmodehelper::center;
+
+	if (trainingmodehelper::swapState != trainingmodehelper::defaultSides &&
+			trainingmodehelper::swapState != trainingmodehelper::swappedSides)
+		trainingmodehelper::swapState = trainingmodehelper::defaultSides;
+
 	if (ImGui::Button("Left")) {
-		TrainingModeHelper::leftCorner = true;
-		TrainingModeHelper::rightCorner = false;
-		TrainingModeHelper::center = false;
+		trainingmodehelper::positionState = trainingmodehelper::leftCorner;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Center")) {
-		TrainingModeHelper::leftCorner = false;
-		TrainingModeHelper::rightCorner = false;
-		TrainingModeHelper::center = true;
+		trainingmodehelper::positionState = trainingmodehelper::center;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Right")) {
-		TrainingModeHelper::leftCorner = false;
-		TrainingModeHelper::rightCorner = true;
-		TrainingModeHelper::center = false;
+		trainingmodehelper::positionState = trainingmodehelper::rightCorner;
 	}
 	if (ImGui::Button("Swap Sides")) {
-		TrainingModeHelper::positionSwapped = !TrainingModeHelper::positionSwapped;
+		if(trainingmodehelper::swapState == trainingmodehelper::defaultSides)
+			trainingmodehelper::swapState = trainingmodehelper::swappedSides;
+		else
+			trainingmodehelper::swapState = trainingmodehelper::defaultSides;
 	}
 
-	ImGui::Text("Current Position: %s", TrainingModeHelper::center ? "Center" : TrainingModeHelper::leftCorner ? "Left Corner" : "Right Corner");
-	ImGui::Text("Swapped? %s", TrainingModeHelper::positionSwapped ? "True" : "False");
+	ImGui::Text("Current Position: %s", trainingmodehelper::positionState == trainingmodehelper::center ? "Center" : trainingmodehelper::positionState == trainingmodehelper::leftCorner ? "Left Corner" : "Right Corner");
+	ImGui::Text("Swapped? %s", trainingmodehelper::swapState == trainingmodehelper::defaultSides ? "True" : "False");
 	ImGui::End();
 }
 

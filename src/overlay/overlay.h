@@ -26,14 +26,4 @@ static bool show_character_select = false;
 static bool show_character_data = false;
 static bool show_position_reset = false;
 
-struct TrainingModeHelper {
-	static bool leftCorner;
-	static bool center;
-	static bool rightCorner;
-	static bool positionSwapped;
-	static bool paused;
-	static unsigned int previousInput;
-	static int* playerInput;
-};
-
 LRESULT WINAPI OverlayWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
