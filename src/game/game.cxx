@@ -393,7 +393,7 @@ bool __cdecl ggpo_on_event(GGPOEvent* info) {
 		break;
 	case GGPO_EVENTCODE_RUNNING:
 		// MessageBoxA(NULL, "running", NULL, MB_OK);
-		EnterVersus2P(g_lpGameState, g_lpGameState->ggpoState.characters, &STAGES[0]);
+		EnterVersus2P(g_lpGameState, g_lpGameState->ggpoState.characters, g_lpGameState->ggpoState.stage);
 		break;
 	case GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
 		// MessageBoxA(NULL, "interrupted", NULL, MB_OK);
@@ -601,10 +601,25 @@ void PrepareGGPOSession(GameState* lpGameState) {
 	cb->begin_game = ggpo_begin_game;
 	cb->on_event = ggpo_on_event;
 
+	StageSelection* pSelectedStage = 0;
+	//if the stages don't match we randomly roll between them.
+	if (request->pSelectedStage->value != response->pSelectedStage->value) {
+		double r = ((double)rand() / (RAND_MAX));
+		if (r < .50)
+			pSelectedStage = response->pSelectedStage;
+		else
+			pSelectedStage = request->pSelectedStage;
+	}
+	//Make sure we got a stage
+	if (pSelectedStage == 0) {
+		pSelectedStage = &STAGES[0];
+	}
+
 	g_lpGameState = lpGameState;
 	lpGameState->ggpoState.localPlayerIndex = bIsHost ? 0 : 1;
 	lpGameState->ggpoState.characters[0] = (int)response->nSelectedCharacter;
 	lpGameState->ggpoState.characters[1] = (int)request->nSelectedCharacter;
+	lpGameState->ggpoState.stage = pSelectedStage;
 	lpGameState->ggpoState.ggpo = NULL;
 	lpGameState->ggpoState.lastResult = GGPO_OK;
 	lpGameState->ggpoState.bIsSynchronized = 0;

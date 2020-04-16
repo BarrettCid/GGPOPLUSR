@@ -115,19 +115,6 @@ struct RandomNumberGenerator {
     int bIsInitialized;
 };
 
-typedef struct ClientSynchronizationRequest {
-    unsigned short nPort;
-    int nSelectedCharacter;
-} ClientSynchronizationRequest;
-
-typedef struct ServerSynchronizationResponse {
-    unsigned short nPort;
-    int nSelectedCharacter;
-    RandomNumberGenerator RNG1;
-    RandomNumberGenerator RNG2;
-    RandomNumberGenerator RNG3;
-} ServerSynchronizationResponse;
-
 typedef struct CharacterSelection {
     char* name;
     int value;
@@ -218,6 +205,21 @@ static StageSelection STAGES[] = {
     {"AD2172 (Slash)", 0x39},
 };
 
+typedef struct ClientSynchronizationRequest {
+    unsigned short nPort;
+    int nSelectedCharacter;
+    StageSelection* pSelectedStage;
+} ClientSynchronizationRequest;
+
+typedef struct ServerSynchronizationResponse {
+    unsigned short nPort;
+    int nSelectedCharacter;
+    StageSelection* pSelectedStage;
+    RandomNumberGenerator RNG1;
+    RandomNumberGenerator RNG2;
+    RandomNumberGenerator RNG3;
+} ServerSynchronizationResponse;
+
 struct InputRewriteStruct {
     bool left;
     bool down;
@@ -263,6 +265,7 @@ typedef struct GGPOState {
     GGPOErrorCode lastResult;
     int localPlayerIndex;
     int characters[2];
+    StageSelection* stage;
     char bIsSynchronized;
     int nFramesAhead;
 } GGPOState;
@@ -408,8 +411,9 @@ HANDLE CreateSynchronizeClientThread(GameState* lpGameState,
     char* szHostIP,
     unsigned short nSyncPort,
     unsigned short nGGPOPort,
-    int nOurCharacter);
-HANDLE CreateSynchronizeServerThread(GameState* lpGameState, unsigned short nSyncPort, unsigned short nGGPOPort, int nOurCharacter);
+    int nOurCharacter,
+    StageSelection* pOurStage);
+HANDLE CreateSynchronizeServerThread(GameState* lpGameState, unsigned short nSyncPort, unsigned short nGGPOPort, int nOurCharacter, StageSelection* pOurStage);
 void PrepareGGPOSession(GameState* lpGameState);
 
 typedef unsigned short XInputButton;

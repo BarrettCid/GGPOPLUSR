@@ -97,6 +97,8 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 
 	static CharacterSelection* lpCharacter = &CHARACTERS[0];
 
+	static StageSelection* lpStage = &STAGES[0];
+
 	GGPOState* gs = &(lpGameState->ggpoState);
 
 	if (!load_vdf) {
@@ -124,6 +126,21 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 		ImGui::EndCombo();
 	}
 
+	if (ImGui::BeginCombo("Stage", lpStage->name, 0))
+	{
+		for (int n = 0; n < IM_ARRAYSIZE(STAGES); n++)
+		{
+			bool is_selected = (lpStage == &STAGES[n]);
+			if (ImGui::Selectable(STAGES[n].name, is_selected)) {
+				lpStage = &STAGES[n];
+			}
+			if (is_selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
 	if (lpGameState->ggpoState.ggpo == NULL) {
 		if (lpGameState->sessionInitState.hSyncThread != NULL) {
 			ImGui::Text("Synchronization thread started...");
@@ -133,7 +150,8 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 				szHostIp,
 				nSyncPort,
 				nOurGGPOPort,
-				lpCharacter->value);
+				lpCharacter->value,
+				lpStage);
 		}
 	}
 	else {
@@ -181,6 +199,7 @@ void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 	static bool load_vdf = false;
 //	char buf[2];
 	static CharacterSelection* lpCharacter = &CHARACTERS[0];
+	static StageSelection* lpStage = &STAGES[0];
 
 	if (!load_vdf) {
 		LoadGGPOInfo(lpGameState, nSyncPort, nOurGGPOPort);
@@ -203,6 +222,21 @@ void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 		ImGui::EndCombo();
 	}
 
+	if (ImGui::BeginCombo("Stage", lpStage->name, 0))
+	{
+		for (int n = 0; n < IM_ARRAYSIZE(STAGES); n++)
+		{
+			bool is_selected = (lpStage == &STAGES[n]);
+			if (ImGui::Selectable(STAGES[n].name, is_selected)) {
+				lpStage = &STAGES[n];
+			}
+			if (is_selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
 	if (lpGameState->ggpoState.ggpo == NULL) {
 		if (lpGameState->sessionInitState.hSyncThread != NULL) {
 			ImGui::Text("Synchronization thread started...");
@@ -211,7 +245,8 @@ void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 			lpGameState->sessionInitState.hSyncThread = CreateSynchronizeServerThread(lpGameState,
 				nSyncPort,
 				nOurGGPOPort,
-				lpCharacter->value);
+				lpCharacter->value,
+				lpStage);
 		}
 	}
 	else {

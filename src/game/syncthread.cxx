@@ -22,6 +22,7 @@ typedef struct SynchronizeServerThreadData {
 	unsigned short nSyncPort;
 	unsigned short nGGPOPort;
 	int nOurCharacter;
+	StageSelection* pOurStage;
 	RandomNumberGenerator RNG1;
 	RandomNumberGenerator RNG2;
 	RandomNumberGenerator RNG3;
@@ -33,6 +34,8 @@ typedef struct SynchronizeClientThreadData {
 	unsigned short nSyncPort;
 	unsigned short nGGPOPort;
 	int nOurCharacter;
+	int nCharacterColor;
+	StageSelection* pOurStage;
 } SynchronizeClientThreadData;
 
 DWORD WINAPI SynchronizeClientThreadProc(LPVOID td);
@@ -42,7 +45,8 @@ HANDLE CreateSynchronizeServerThread(
 	GameState* lpGameState,
 	unsigned short nSyncPort,
 	unsigned short nGGPOPort,
-	int nOurCharacter
+	int nOurCharacter,
+	StageSelection* pOurStage
 ) {
 	SECURITY_ATTRIBUTES sa;
 	ZeroMemory(&sa, sizeof(sa));
@@ -55,6 +59,7 @@ HANDLE CreateSynchronizeServerThread(
 	std->nSyncPort = nSyncPort;
 	std->nGGPOPort = nGGPOPort;
 	std->nOurCharacter = nOurCharacter;
+	std->pOurStage = pOurStage;
 	memcpy(&std->RNG1, std->lpGameState->lpRNG1, sizeof(RandomNumberGenerator));
 	memcpy(&std->RNG2, std->lpGameState->lpRNG2, sizeof(RandomNumberGenerator));
 	memcpy(&std->RNG3, std->lpGameState->lpRNG3, sizeof(RandomNumberGenerator));
@@ -91,6 +96,7 @@ DWORD WINAPI SynchronizeServerThreadProc(LPVOID td) {
 
 	response.nPort = std->nGGPOPort;
 	response.nSelectedCharacter = std->nOurCharacter;
+	response.pSelectedStage = std->pOurStage;
 	memcpy(&response.RNG1, &std->RNG1, sizeof(RandomNumberGenerator));
 	memcpy(&response.RNG2, &std->RNG2, sizeof(RandomNumberGenerator));
 	memcpy(&response.RNG3, &std->RNG3, sizeof(RandomNumberGenerator));
@@ -176,7 +182,8 @@ HANDLE CreateSynchronizeClientThread(
 	char* szHostIP,
 	unsigned short nSyncPort,
 	unsigned short nGGPOPort,
-	int nOurCharacter
+	int nOurCharacter,
+	StageSelection* pOurStage
 ) {
 	SECURITY_ATTRIBUTES sa;
 	ZeroMemory(&sa, sizeof(sa));
@@ -189,6 +196,7 @@ HANDLE CreateSynchronizeClientThread(
 	ctd->nSyncPort = nSyncPort;
 	ctd->nGGPOPort = nGGPOPort;
 	ctd->nOurCharacter = nOurCharacter;
+	ctd->pOurStage = pOurStage;
 	return CreateThread(
 		&sa,
 		0,
